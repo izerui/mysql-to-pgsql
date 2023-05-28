@@ -24,16 +24,20 @@ spec:
           env:
             - name: MYSQL_HOST
               value: "10.96.15.155"
+            - name: MYSQL_PORT
+              value: "3306"
             - name: MYSQL_USER
               value: "root"
             - name: MYSQL_PASS
               value: "root"
             - name: PGSQL_HOST
-              value: "10.96.8.17"
+              value: "106.75.143.56"
+            - name: PGSQL_PORT
+              value: "5432"
             - name: PGSQL_USER
-              value: "postgres"
+              value: "root"
             - name: PGSQL_PASS
-              value: "postgres"
+              value: "Root.1234"
             - name: PGSQL_DATABASE
               value: "datalake_test"
           command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
