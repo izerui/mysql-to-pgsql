@@ -46,11 +46,6 @@ async def migration(sourceDB: str = Query(default=Required, description='mysql�
     pg_pass = os.environ['PGSQL_PASS']
     pg_database = os.environ['PGSQL_DATABASE']
 
-    if not my_host and not my_user and not my_pass:
-        return 'mysql源库定义缺失参数'
-    if not pg_host and not pg_user and not pg_pass:
-        return 'pgsql目标库定义缺失参数'
-
     # schema only 不迁移数据 参考: https://pgloader.readthedocs.io/en/latest/ref/mysql.html#mysql-database-migration-options-with
     outputs = exe_command(
         f'pgloader --with "batch rows = 15000" --with "create no indexes" mysql://{my_user}:{my_pass}@{my_host}:{my_port}/{sourceDB} pgsql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_database}')
