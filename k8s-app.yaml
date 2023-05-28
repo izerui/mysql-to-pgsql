@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-to-pgsql
+  namespace: test
+spec:
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: mysql-to-pgsql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql-to-pgsql
+    spec:
+      containers:
+        - name: mysql-to-pgsql
+          image: harbor.yj2025.com/library/mysql-to-pgsql:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MYSQL_HOST
+              value: "10.96.15.155"
+            - name: MYSQL_USER
+              value: "root"
+            - name: MYSQL_PASS
+              value: "root"
+            - name: PGSQL_HOST
+              value: "10.96.8.17"
+            - name: PGSQL_USER
+              value: "postgres"
+            - name: PGSQL_PASS
+              value: "postgres"
+            - name: PGSQL_DATABASE
+              value: "datalake_test"
+          command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+      imagePullSecrets:
+        - name: harbor-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-to-pgsql-service
+  namespace: test
+spec:
+  ports:
+    - name: web
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app: mysql-to-pgsql
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mysql-to-pgsql-ingress
+  namespace: test
+  annotations:
+    nginx.org/redirect-to-https: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.org/client-max-body-size: "1024m"
+    nginx.org/proxy-read-timeout: "1m"
+    nginx.org/proxy-send-timeout: "1m"
+spec:
+  ingressClassName: nginx-lb
+  tls:
+    - secretName: yj2025-secret
+      hosts:
+        - sync-test.yj2025.com
+  rules:
+    - host: sync-test.yj2025.com
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: mysql-to-pgsql-service
+                port:
+                  number: 8000
