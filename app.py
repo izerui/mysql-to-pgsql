@@ -48,7 +48,7 @@ async def migration(sourceDB: str = Query(default=Required, description='mysql�
 
     # schema only 不迁移数据 参考: https://pgloader.readthedocs.io/en/latest/ref/mysql.html#mysql-database-migration-options-with
     outputs = exe_command(
-        f'pgloader --with "batch rows = 15000" --with "create no indexes" mysql://{my_user}:{my_pass}@{my_host}:{my_port}/{sourceDB} pgsql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_database}')
+        f'pgloader --with "batch rows = 15000" --with "create no indexes" --with "timezone Asia/Shanghai" mysql://{my_user}:{my_pass}@{my_host}:{my_port}/{sourceDB} pgsql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_database}')
     return '\n'.join(outputs)
 
 
